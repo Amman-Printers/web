@@ -166,19 +166,12 @@ async function handleSubmit(e) {
     payload.action = 'create'; // For GAS
 
     try {
-        // MOCK SUBMISSION
-        console.log("Submitting payload", payload);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Mock response
-        const response = { status: 'success', result: [{ orderid: Math.floor(Math.random() * 10000), ...payload, orderDate: new Date().toLocaleDateString('en-GB') }] };
-        
-        // REAL SUBMISSION (Uncomment when GAS is ready)
-        // const res = await fetch(CONFIG.SCRIPT_URL, {
-        //    method: 'POST',
-        //    body: JSON.stringify(payload)
-        // });
-        // const response = await res.json();
+        // REAL SUBMISSION
+        const res = await fetch(CONFIG.SCRIPT_URL, {
+           method: 'POST',
+           body: JSON.stringify(payload)
+        });
+        const response = await res.json();
 
         if (response.status === 'success') {
             orderId = response.result[0].orderid;
