@@ -324,11 +324,41 @@ async function generatePDF() {
         drawCenter("GSTIN: 33ADKFS4757P1ZA", y, 8, helv); y -= 9;
         drawCenter("State Code: 33", y, 8, helv); y -= 12;
 
-        // ... (Simplified thermal bill logic for brevity, can be expanded if needed)
-        // Just adding basic info for now
-        thermalPage.drawText(`Bill No: ${queryData.orderid}`, { x: left, y, size: 9, font: helvBold });
+        // Table Header
+        y -= 5;
+        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0) });
+        y -= 10;
+        thermalPage.drawText("Item", { x: left, y, size: 9, font: helvBold });
+        thermalPage.drawText("Qty", { x: left + 110, y, size: 9, font: helvBold });
+        thermalPage.drawText("Rate", { x: left + 140, y, size: 9, font: helvBold });
+        thermalPage.drawText("Amt", { x: right - 25, y, size: 9, font: helvBold });
+        y -= 4;
+        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0) });
         y -= 12;
-        thermalPage.drawText(`Total: ${allAmt.toFixed(2)}`, { x: left, y, size: 10, font: helvBold });
+
+        // Items Loop
+        for (const item of items) {
+            // Truncate item name if too long
+            let partName = item.part;
+            if (partName.length > 20) partName = partName.substring(0, 20) + "..";
+            
+            thermalPage.drawText(partName, { x: left, y, size: 9, font: helv });
+            thermalPage.drawText(item.qty, { x: left + 115, y, size: 9, font: helv });
+            thermalPage.drawText(item.rate, { x: left + 140, y, size: 9, font: helv });
+            drawRight(item.amount, right, y, 9, helv);
+            y -= 12;
+        }
+
+        y -= 5;
+        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0) });
+        y -= 15;
+
+        // Totals
+        drawRight(`Total: ${allAmt.toFixed(2)}`, right, y, 12, helvBold);
+        y -= 15;
+        
+        // Footer
+        drawCenter("Thank You! Visit Again.", y, 9, helv);
 
     } catch (err) {
         console.error("Thermal page failed", err);
