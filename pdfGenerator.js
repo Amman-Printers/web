@@ -254,8 +254,8 @@ async function generateOrderPDF(queryData) {
 
 
 
-        drawSolidLine(y + 2);
-        y -= 8;
+        // drawSolidLine(y + 2);
+        // y -= 8;
 
         drawRightAligned("TOTAL:", rightColLabel, y, { size: 10, font: helvBold });
         drawRightAligned(`Rs. ${subTotalAmount.toFixed(2)}`, rightColValue, y, { size: 10, font: helvBold });
