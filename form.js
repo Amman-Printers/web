@@ -226,8 +226,9 @@ async function generatePDF() {
         return;
     }
     const { PDFDocument, StandardFonts } = PDFLib;
-    const formUrl = 'GSTin Invoice.pdf';
-    const formPdfBytes = await fetch(formUrl).then(res => res.arrayBuffer());
+    
+    // Convert Base64 string to Uint8Array
+    const formPdfBytes = Uint8Array.from(atob(PDF_TEMPLATE), c => c.charCodeAt(0));
     const pdfDoc = await PDFDocument.load(formPdfBytes);
     const form = pdfDoc.getForm();
 
@@ -263,23 +264,23 @@ async function generatePDF() {
     safeGet("at").setText(Math.floor(allAmt).toString());
     safeGet("pat").setText(((allAmt % 1) * 100).toFixed(0).padStart(2, "0"));
 
-    const toWords = new ToWords({
-        localeCode: "en-IN",
-        converterOptions: {
-            currency: true,
-            ignoreDecimal: false,
-            ignoreZeroCurrency: false,
-            doNotAddOnly: false,
-            currencyOptions: {
-                name: "Rupee",
-                plural: "Rupees",
-                symbol: "₹",
-                fractionalUnit: { name: "Paisa", plural: "Paise", symbol: "" },
-            },
-        },
-    });
+    // const toWords = new ToWords({
+    //     localeCode: "en-IN",
+    //     converterOptions: {
+    //         currency: true,
+    //         ignoreDecimal: false,
+    //         ignoreZeroCurrency: false,
+    //         doNotAddOnly: false,
+    //         currencyOptions: {
+    //             name: "Rupee",
+    //             plural: "Rupees",
+    //             symbol: "₹",
+    //             fractionalUnit: { name: "Paisa", plural: "Paise", symbol: "" },
+    //         },
+    //     },
+    // });
 
-    safeGet("ru").setText(toWords.convert(allAmt.toFixed(2)).toString());
+    // safeGet("ru").setText(toWords.convert(allAmt.toFixed(2)).toString());
 
     try { form.flatten(); } catch (err) {}
 
