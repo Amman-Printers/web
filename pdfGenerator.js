@@ -24,7 +24,7 @@ async function generateOrderPDF(queryData) {
     safeGet("code").setText((queryData.code || "").toString());
     safeGet("orderid").setText(orderId.toString());
     safeGet("address").setText((queryData.address || "").toString());
-    safeGet("orderDate").setText((queryData.orderDate || "").toString());
+    safeGet("orderDate").setText(new Date(queryData.orderDate).toLocaleDateString("en-GB"));
 
     let allAmt = 0;
     // Main PDF Table population
@@ -175,18 +175,7 @@ async function generateOrderPDF(queryData) {
         // ===================== BILL METADATA SECTION =====================
         thermalPage.drawText(`Bill No: ${orderId}`, { x: left, y: y, size: 9, font: helvBold });
 
-        let dateStr = (queryData.orderDate || new Date()).toString();
-        try {
-            const dObj = new Date(dateStr);
-            if (!isNaN(dObj.getTime())) {
-                const day = String(dObj.getDate()).padStart(2, '0');
-                const month = String(dObj.getMonth() + 1).padStart(2, '0');
-                const year = dObj.getFullYear();
-                dateStr = `${day}-${month}-${year}`;
-            }
-        } catch (e) {
-            console.error("Date parsing failed", e);
-        }
+        let dateStr = new Date(queryData.orderDate).toLocaleDateString("en-GB");
         drawRightAligned(`Date: ${dateStr}`, right, y, { size: 9, font: helvBold });
         y -= 12;
 
