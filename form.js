@@ -306,144 +306,45 @@ async function generatePDF() {
         // Calculations
         const subTotalAmount = allAmt;
         const igst3Amount = subTotalAmount * 0.03;
-        const grandTotalAmount = subTotalAmount + igst3Amount;
+        // const igst5Amount = subTotalAmount * 0.05; // REMOVED as per request
+        // const igst12Amount = subTotalAmount * 0.12; // REMOVED as per request
+        const grandTotalAmount = subTotalAmount + igst3Amount; 
 
 
-        // Dynamic Height Calculation
-        const headerHeight = 160; 
+        // Dynamic Height Calculation estimate
+        const headerHeight = 220; 
         const itemHeight = 14;
-        const footerHeight = 120; // Increased for amount in words
-        const pageHeight = headerHeight + (items.length * itemHeight) + footerHeight + 50; 
+        const footerHeight = 150; 
+        const pageHeight = headerHeight + (items.length * itemHeight) + footerHeight; 
         const thermalPage = pdfDoc.addPage([pageWidth, pageHeight]);
 
         let y = pageHeight - 15;
-        const left = 5;
-        const right = pageWidth - 5;
+        const left = 10;
+        const right = pageWidth - 10;
         const centerX = pageWidth / 2;
 
-        const drawCenter = (text, y, size, font) => {
-            const width = font.widthOfTextAtSize(text, size);
-            thermalPage.drawText(text, { x: (pageWidth - width) / 2, y, size, font });
+        // HELPER FUNCTIONS
+        const drawCenterAligned = (text, y, options) => {
+            const width = options.font.widthOfTextAtSize(text, options.size);
+            thermalPage.drawText(text, { x: (pageWidth - width) / 2, y, size: options.size, font: options.font });
         };
-        const drawRight = (text, x, y, size, font) => {
-            const width = font.widthOfTextAtSize(text, size);
-            thermalPage.drawText(text, { x: x - width, y, size, font });
+        const drawRightAligned = (text, x, y, options) => {
+            const width = options.font.widthOfTextAtSize(text, options.size);
+            thermalPage.drawText(text, { x: x - width, y, size: options.size, font: options.font });
         };
-        const drawLeft = (text, x, y, size, font) => {
-             thermalPage.drawText(text, { x: x, y, size, font });
+        const drawSolidLine = (y) => {
+             thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0) });
+        };
+        const drawDottedLine = (y) => {
+             thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0), dashArray: [2, 2] });
         };
 
-        // --- HEADER ---
-        drawCenter("TAX INVOICE", y, 11, helvBold); y -= 14;
-        drawCenter("Sri Amman Printers", y, 16, helvBold); y -= 14;
-        drawCenter("99, Bhavani Road, Near Anna Statue,", y, 9, helv); y -= 10;
-        drawCenter("Perundurai - 638052, Erode District,", y, 9, helv); y -= 10;
-        drawCenter("Tamil Nadu", y, 9, helv); y -= 10;
-        drawCenter("Phone: 04294-222001", y, 9, helv); y -= 10;
-        drawCenter("GSTIN: 33ADKFS4757P1ZA", y, 9, helv); y -= 10;
-        drawCenter("State Code: 33", y, 9, helv); y -= 8;
-
-        // Separator
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 0.5, color: PDFLib.rgb(0, 0, 0) });
-        y -= 3;
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 0.5, color: PDFLib.rgb(0, 0, 0), dashArray: [2, 2] });
-        y -= 12;
-
-        // --- BILL DETAILS ---
-        drawLeft(`Bill No: ${queryData.orderid || orderId}`, left, y, 10, helvBold);
-        drawRight(`Date: ${queryData.orderDate || new Date().toISOString().split('T')[0]}`, right, y, 10, helvBold);
-        y -= 8;
-        
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 0.5, color: PDFLib.rgb(0, 0, 0), dashArray: [2, 2] });
-        y -= 12;
-
-        // --- CUSTOMER DETAILS (TO) ---
-        drawLeft("TO:", left, y, 10, helvBold); y -= 12;
-        drawLeft(`  ${queryData.name || ""}`, left, y, 10, helv); y -= 12;
-        
-        // Wrap Address basically
-        let address = queryData.address || "";
-        if (address.length > 35) {
-             drawLeft(`  Address: ${address.substring(0, 35)}`, left, y, 9, helv); y -= 10;
-             drawLeft(`  ${address.substring(35, 70)}`, left, y, 9, helv); y -= 10;
-        } else {
-             drawLeft(`  Address: ${address}`, left, y, 9, helv); y -= 10;
-        }
-        
-        drawLeft(`  GSTIN: ${queryData.gst || ""}`, left, y, 9, helv); y -= 10;
-        drawLeft(`  State Code: ${queryData.code || ""}`, left, y, 9, helv); y -= 12;
-
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 0.5, color: PDFLib.rgb(0, 0, 0), dashArray: [2, 2] });
-        y -= 12;
-
-        // --- TABLE HEADER ---
-        thermalPage.drawText("SN", { x: left, y, size: 9, font: helvBold });
-        thermalPage.drawText("Particulars", { x: left + 20, y, size: 9, font: helvBold });
-        thermalPage.drawText("Qty", { x: left + 120, y, size: 9, font: helvBold });
-        thermalPage.drawText("Rate", { x: left + 150, y, size: 9, font: helvBold });
-        thermalPage.drawText("Amount", { x: right - 35, y, size: 9, font: helvBold });
-        y -= 4;
-        
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0) });
-        y -= 12;
-
-        // --- ITEMS ---
-        for (const item of items) {
-            drawLeft(item.sn, left, y, 9, helv);
-            
-            // Truncate item name
-            let partName = item.part;
-            if (partName.length > 18) partName = partName.substring(0, 18) + "..";
-            
-            drawLeft(partName, left + 20, y, 9, helv);
-            
-            // Align numbers
-            thermalPage.drawText(item.qty, { x: left + 125, y, size: 9, font: helv });
-            thermalPage.drawText(item.rate, { x: left + 150, y, size: 9, font: helv });
-            drawRight(item.amount, right, y, 9, helv);
-            
-            y -= 14;
-        }
-
-        y += 2; // Adjustment
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0) });
-        y -= 14;
-
-        // --- TOTALS ---
-        drawRight(`Subtotal:`, right - 60, y, 10, helv);
-        drawRight(`Rs. ${subTotalAmount.toFixed(2)}`, right, y, 10, helvBold);
-        y -= 6;
-        
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 0.5, color: PDFLib.rgb(0, 0, 0), dashArray: [2, 2] });
-        y -= 12;
-
-        drawRight(`IGST @ 3%:`, right - 60, y, 10, helv);
-        drawRight(`Rs. ${igst3Amount.toFixed(2)}`, right, y, 10, helv);
-        y -= 12;
-
-        // Requested removals
-        // IGST @ 5%, 12% removed.
-
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0) });
-        y -= 14;
-
-        drawRight(`TOTAL:`, right - 80, y, 12, helvBold);
-        drawRight(`Rs. ${grandTotalAmount.toFixed(2)}`, right, y, 12, helvBold);
-        y -= 6;
-        
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 1, color: PDFLib.rgb(0, 0, 0) });
-        y -= 15;
-
-        // --- FOOTER ---
-        drawLeft("Amount (in words):", left, y, 9, helvBold); y -= 12;
-        // Basic number to words implementation since libraries might be missing
+        // Number to Words Helper
         const numToWords = (n) => {
              const a = ['','One ','Two ','Three ','Four ','Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
              const b = ['', '', 'Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
-
              const num = parseFloat(n).toFixed(2);
              const [whole, fraction] = num.split('.');
-             
              const convert = (num) => {
                  if ((num = num.toString()).length > 9) return 'overflow';
                  n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
@@ -455,29 +356,161 @@ async function generatePDF() {
                  str += (n[5] != 0) ? ((str != '') ? 'And ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]])  : '';
                  return str;
              };
-             
              let str = convert(whole) + "Rupees ";
-             if (parseInt(fraction) > 0) {
-                 str += "And " + convert(fraction) + "Paise ";
-             }
+             if (parseInt(fraction) > 0) { str += "And " + convert(fraction) + "Paise "; }
              return str + "Only";
         };
 
-        const words = numToWords(grandTotalAmount);
-        
-        // rudimentary word wrap for words
-        if (words.length > 40) {
-             drawLeft(words.substring(0, 40), left + 10, y, 9, helv); y -= 10;
-             drawLeft(words.substring(40), left + 10, y, 9, helv); 
+
+        // ===================== HEADER SECTION =====================
+        drawCenterAligned("TAX INVOICE", y, { size: 10, font: helvBold });
+        y -= 12;
+
+        drawCenterAligned("Sri Amman Printers", y, { size: 14, font: helvBold });
+        y -= 14;
+
+        const companyAddressLines = [
+            "99, Bhavani Road, Near Anna Statue,",
+            "Perundurai - 638052, Erode District,",
+            "Tamil Nadu"
+        ];
+        for (const addrLine of companyAddressLines) {
+            drawCenterAligned(addrLine, y, { size: 8, font: helv });
+            y -= 9;
+        }
+
+        drawCenterAligned("Phone: 04294-222001", y, { size: 8, font: helv });
+        y -= 9;
+
+        drawCenterAligned("GSTIN: 33ADKFS4757P1ZA", y, { size: 8, font: helv });
+        y -= 9;
+
+        drawCenterAligned("State Code: 33", y, { size: 8, font: helv });
+        y -= 12;
+
+        drawDottedLine(y + 4);
+        y -= 8;
+
+        // ===================== BILL METADATA SECTION =====================
+        thermalPage.drawText(`Bill No: ${queryData.orderid || orderId}`, { x: left, y: y, size: 9, font: helvBold });
+
+        const dateStr = (queryData.orderDate || new Date().toISOString().split('T')[0]).toString();
+        drawRightAligned(`Date: ${dateStr}`, right, y, { size: 9, font: helvBold });
+        y -= 12;
+
+        drawDottedLine(y + 2);
+        y -= 8;
+
+        // ===================== CUSTOMER INFO SECTION =====================
+        thermalPage.drawText("TO:", { x: left, y: y, size: 9, font: helvBold });
+        y -= 10;
+
+        thermalPage.drawText((queryData.name || "").toString(), { x: left + 4, y: y, size: 9, font: helv });
+        y -= 10;
+
+        if (queryData.address) {
+            thermalPage.drawText(`Address: ${(queryData.address || "").toString()}`, {
+                x: left + 4, y: y, size: 8, font: helv,
+                maxWidth: pageWidth - left * 2 - 4,
+            });
+            y -= 9;
+            // Hacky manual wrap for second line if needed (not perfect but simple)
+            if ((queryData.address || "").length > 35) y -= 9; 
+        }
+
+        if (queryData.gst) {
+            thermalPage.drawText(`GSTIN: ${(queryData.gst || "").toString()}`, { x: left + 4, y: y, size: 8, font: helv });
+            y -= 9;
+        }
+
+        if (queryData.code) {
+            thermalPage.drawText(`State Code: ${(queryData.code || "").toString()}`, { x: left + 4, y: y, size: 8, font: helv });
+            y -= 12;
         } else {
-             drawLeft(words, left + 10, y, 9, helv);
+            y -= 3;
+        }
+
+        drawDottedLine(y + 4);
+        y -= 8;
+
+        // ===================== TABLE SECTION =====================
+        const colSN = left;
+        const colPart = left + 18;
+        const colQty = left + 115; 
+        const colRate = left + 155; 
+        const colAmt = right;      
+
+        // Table Headers
+        thermalPage.drawText("SN", { x: colSN, y: y, size: 8, font: helvBold });
+        thermalPage.drawText("Particulars", { x: colPart, y: y, size: 8, font: helvBold });
+        drawRightAligned("Qty", colQty, y, { size: 8, font: helvBold });
+        drawRightAligned("Rate", colRate, y, { size: 8, font: helvBold });
+        drawRightAligned("Amount", colAmt, y, { size: 8, font: helvBold });
+        y -= 10;
+
+        drawSolidLine(y + 3);
+        y -= 8;
+
+        // Items
+        for (const it of items) {
+            thermalPage.drawText(it.sn, { x: colSN, y: y, size: 8, font: helv });
+
+            let partText = it.part;
+            if (partText.length > 22) partText = partText.slice(0, 22) + '..';
+            thermalPage.drawText(partText, { x: colPart, y: y, size: 8, font: helv });
+
+            drawRightAligned(it.qty, colQty, y, { size: 8, font: helv });
+            drawRightAligned(it.rate, colRate, y, { size: 8, font: helv });
+            drawRightAligned(it.amount, colAmt, y, { size: 8, font: helv });
+            y -= 10;
+        }
+
+        drawSolidLine(y + 3);
+        y -= 8;
+
+        // ===================== TOTALS SECTION =====================
+        const rightColLabel = right - 80;
+        const rightColValue = right;
+
+        drawRightAligned("Subtotal:", rightColLabel, y, { size: 8, font: helv });
+        drawRightAligned(`Rs. ${subTotalAmount.toFixed(2)}`, rightColValue, y, { size: 8, font: helvBold });
+        y -= 10;
+
+        drawDottedLine(y + 2);
+        y -= 8;
+
+        // IGST 3% Only
+        if (igst3Amount > 0) {
+            drawRightAligned("IGST @ 3%:", rightColLabel, y, { size: 8, font: helv });
+            drawRightAligned(`Rs. ${igst3Amount.toFixed(2)}`, rightColValue, y, { size: 8, font: helv });
+            y -= 9;
+        }
+
+        drawSolidLine(y + 2);
+        y -= 8;
+
+        drawRightAligned("TOTAL:", rightColLabel, y, { size: 10, font: helvBold });
+        drawRightAligned(`Rs. ${grandTotalAmount.toFixed(2)}`, rightColValue, y, { size: 10, font: helvBold });
+        y -= 14;
+
+        drawSolidLine(y + 4);
+        y -= 10;
+
+        const words = numToWords(grandTotalAmount);
+        thermalPage.drawText("Amount (in words):", { x: left, y: y, size: 8, font: helvBold });
+        y -= 10;
+        
+        if (words.length > 45) {
+             thermalPage.drawText(words.substring(0, 45), { x: left + 5, y: y, size: 8, font: helv });
+             y -= 9;
+             thermalPage.drawText(words.substring(45), { x: left + 5, y: y, size: 8, font: helv });
+        } else {
+             thermalPage.drawText(words, { x: left + 5, y: y, size: 8, font: helv });
         }
         y -= 20;
-
-        thermalPage.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 0.5, color: PDFLib.rgb(0, 0, 0), dashArray: [2, 2] });
-        y -= 15;
         
-        drawCenter("Thank You! Visit Again.", y, 9, helv); y -= 2;
+        drawDottedLine(y + 10);
+        drawCenterAligned("Thank You! Visit Again.", y, { size: 9, font: helv });
 
     } catch (err) {
         console.error("Thermal page failed", err);
