@@ -165,6 +165,11 @@ async function handleSubmit(e) {
     payload.paymentRef = "";
     payload.action = 'create'; // For GAS
 
+
+    document.getElementById('downloadPdfBtn').classList.remove('hidden');
+    document.getElementById('downloadPdfBtn').disabled = false;
+    submitBtn.textContent = 'Order Created';
+
     // try {
     //     // REAL SUBMISSION
     //     const res = await fetch(CONFIG.SCRIPT_URL, {
@@ -215,6 +220,11 @@ async function handleSubmit(e) {
 }
 
 async function generatePDF() {
+    if (typeof PDFLib === 'undefined') {
+        alert('PDFLib library is not loaded. Please check your internet connection or try refreshing the page.');
+        console.error('PDFLib is not defined');
+        return;
+    }
     const { PDFDocument, StandardFonts } = PDFLib;
     const formUrl = 'GSTin Invoice.pdf';
     const formPdfBytes = await fetch(formUrl).then(res => res.arrayBuffer());
