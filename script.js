@@ -14,10 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus(null);
 
             try {
-                const response = await fetch(CONFIG.SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'login', user: username, password: password })
+                const params = new URLSearchParams({
+                    action: 'login',
+                    user: username,
+                    password: password
                 });
+                const response = await fetch(`${CONFIG.SCRIPT_URL}?${params.toString()}`);
                 const data = await response.json();
 
                 if (data.result === 'success') {
