@@ -184,3 +184,43 @@ function handleUpdateOrder(params) {
 
   return { result: 'error', message: 'Order not found' };
 }
+
+function setup() {
+  const doc = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // Setup Login Sheet
+  let loginSheet = doc.getSheetByName(LOGIN_SHEET);
+  if (!loginSheet) {
+    loginSheet = doc.insertSheet(LOGIN_SHEET);
+    loginSheet.appendRow(['Mail', 'pwd']);
+    loginSheet.appendRow(['admin', 'admin']); // Default user
+    loginSheet.setFrozenRows(1);
+    SpreadsheetApp.getUi().alert("Login sheet created successfully!");
+  }
+
+  // Setup Orders Sheet
+  let ordersSheet = doc.getSheetByName(ORDER_SHEET);
+  if (!ordersSheet) {
+    ordersSheet = doc.insertSheet(ORDER_SHEET);
+
+    const headers = [
+      "orderid", "name", "phone", "gst", "code", "address",
+      "particular1", "book1", "rate1",
+      "particular2", "book2", "rate2",
+      "particular3", "book3", "rate3",
+      "particular4", "book4", "rate4",
+      "particular5", "book5", "rate5",
+      "particular6", "book6", "rate6",
+      "particular7", "book7", "rate7",
+      "particular8", "book8", "rate8",
+      "particular9", "book9", "rate9",
+      "count", "noOfCopies", "totalamt", "pendingamt", "paid",
+      "paymentId", "paymentStatus", "paymentRef",
+      "lastUpdateTimestamp", "orderDate"
+    ];
+
+    ordersSheet.appendRow(headers);
+    ordersSheet.setFrozenRows(1);
+    SpreadsheetApp.getUi().alert("Orders sheet created successfully!");
+  }
+}
