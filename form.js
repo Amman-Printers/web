@@ -170,53 +170,53 @@ async function handleSubmit(e) {
     document.getElementById('downloadPdfBtn').disabled = false;
     submitBtn.textContent = 'Order Created';
 
-    // try {
-    //     // REAL SUBMISSION
-    //     const res = await fetch(CONFIG.SCRIPT_URL, {
-    //        method: 'POST',
-    //        body: JSON.stringify(payload)
-    //     });
-    //     const response = await res.json();
+    try {
+        // REAL SUBMISSION
+        const res = await fetch(CONFIG.SCRIPT_URL, {
+           method: 'POST',
+           body: JSON.stringify(payload)
+        });
+        const response = await res.json();
 
-    //     if (response.status === 'success') {
-    //         orderId = response.result[0].orderid;
-    //         queryData = response.result[0];
+        if (response.status === 'success') {
+            orderId = response.result[0].orderid;
+            queryData = response.result[0];
             
-    //         statusDiv.innerHTML = `
-    //             <div class="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 shadow-sm animate-fade-in">
-    //                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600 flex-shrink-0">
-    //                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    //                 </svg>
-    //                 <div>
-    //                     <strong class="font-bold block">Order Created Successfully!</strong>
-    //                     <span class="text-sm opacity-90">Order ID #${orderId}. You can now download the invoice.</span>
-    //                 </div>
-    //             </div>
-    //         `;
+            statusDiv.innerHTML = `
+                <div class="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 shadow-sm animate-fade-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600 flex-shrink-0">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <strong class="font-bold block">Order Created Successfully!</strong>
+                        <span class="text-sm opacity-90">Order ID #${orderId}. You can now download the invoice.</span>
+                    </div>
+                </div>
+            `;
             
-    //         document.getElementById('downloadPdfBtn').classList.remove('hidden');
-    //         document.getElementById('downloadPdfBtn').disabled = false;
-    //         submitBtn.textContent = 'Order Created';
-    //     } else {
-    //         throw new Error('Submission failed');
-    //     }
+            document.getElementById('downloadPdfBtn').classList.remove('hidden');
+            document.getElementById('downloadPdfBtn').disabled = false;
+            submitBtn.textContent = 'Order Created';
+        } else {
+            throw new Error('Submission failed');
+        }
 
-    // } catch (error) {
-    //     console.error(error);
-    //     statusDiv.innerHTML = `
-    //         <div class="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 shadow-sm animate-fade-in">
-    //             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-600 flex-shrink-0">
-    //                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-    //             </svg>
-    //             <div>
-    //                 <strong class="font-bold block">System Error</strong>
-    //                 <span class="text-sm opacity-90">Something went wrong. Please try again.</span>
-    //             </div>
-    //         </div>
-    //     `;
-    //     submitBtn.disabled = false;
-    //     submitBtn.textContent = 'Create Order';
-    // }
+    } catch (error) {
+        console.error(error);
+        statusDiv.innerHTML = `
+            <div class="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 shadow-sm animate-fade-in">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-600 flex-shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+                <div>
+                    <strong class="font-bold block">System Error</strong>
+                    <span class="text-sm opacity-90">Something went wrong. Please try again.</span>
+                </div>
+            </div>
+        `;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Order';
+    }
 }
 
 async function generatePDF() {

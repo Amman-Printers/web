@@ -23,19 +23,19 @@ async function fetchOrders() {
 
     try {
         // MOCK DATA
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const mockOrders = Array.from({ length: 10 }, (_, i) => ({
-            orderid: 1000 + i,
-            name: `Customer ${i + 1}`,
-            orderDate: new Date().toLocaleDateString('en-GB'),
-            totalamt: (Math.random() * 1000).toFixed(2),
-            paymentStatus: Math.random() > 0.5 ? 'Paid' : 'Pending'
-        }));
+        // await new Promise(resolve => setTimeout(resolve, 1000));
+        // const mockOrders = Array.from({ length: 10 }, (_, i) => ({
+        //     orderid: 1000 + i,
+        //     name: `Customer ${i + 1}`,
+        //     orderDate: new Date().toLocaleDateString('en-GB'),
+        //     totalamt: (Math.random() * 1000).toFixed(2),
+        //     paymentStatus: Math.random() > 0.5 ? 'Paid' : 'Pending'
+        // }));
         
         // REAL FETCH
-        // const res = await fetch(CONFIG.SCRIPT_URL + '?action=getOrders');
-        // const data = await res.json();
-        // allOrders = data.result;
+        const res = await fetch(CONFIG.SCRIPT_URL + '?action=getOrders');
+        const data = await res.json();
+        allOrders = data.result;
         
         allOrders = mockOrders;
         renderOrders(allOrders);

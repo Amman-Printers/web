@@ -59,14 +59,14 @@ async function handleUpdate(e) {
     statusDiv.innerHTML = '<div class="text-center text-gray-500">Updating...</div>';
 
     try {
-        // MOCK UPDATE
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // // MOCK UPDATE
+        // await new Promise(resolve => setTimeout(resolve, 1000));
         
         // REAL UPDATE
-        // await fetch(CONFIG.SCRIPT_URL, {
-        //     method: 'POST',
-        //     body: JSON.stringify({ action: 'update', orderid: id, paymentStatus: payment, name: name })
-        // });
+        await fetch(CONFIG.SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'update', orderid: id, paymentStatus: payment, name: name })
+        });
 
         statusDiv.innerHTML = `
             <div class="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 shadow-sm animate-fade-in mt-4">
