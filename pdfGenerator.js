@@ -112,7 +112,7 @@ async function generateOrderPDF(queryData) {
 
         // Calculations
         const subTotalAmount = allAmt;
-        const igst3Amount = subTotalAmount * 0.03;
+        const igst3Amount = subTotalAmount * 0;
         const grandTotalAmount = subTotalAmount + igst3Amount; 
 
 
