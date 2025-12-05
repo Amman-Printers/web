@@ -175,7 +175,18 @@ async function generateOrderPDF(queryData) {
         // ===================== BILL METADATA SECTION =====================
         thermalPage.drawText(`Bill No: ${orderId}`, { x: left, y: y, size: 9, font: helvBold });
 
-        const dateStr = (queryData.orderDate || new Date().toISOString().split('T')[0]).toString();
+        let dateStr = (queryData.orderDate || new Date()).toString();
+        try {
+            const dObj = new Date(dateStr);
+            if (!isNaN(dObj.getTime())) {
+                const day = String(dObj.getDate()).padStart(2, '0');
+                const month = String(dObj.getMonth() + 1).padStart(2, '0');
+                const year = dObj.getFullYear();
+                dateStr = `${day}-${month}-${year}`;
+            }
+        } catch (e) {
+            console.error("Date parsing failed", e);
+        }
         drawRightAligned(`Date: ${dateStr}`, right, y, { size: 9, font: helvBold });
         y -= 12;
 
