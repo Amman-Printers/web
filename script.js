@@ -14,9 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus(null);
 
             try {
-                const response = await fetch(CONFIG.SCRIPT_URL + '?action=login', {
+                const response = await fetch(CONFIG.SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ user: username, password: password })
+                    body: JSON.stringify({ action: 'login', user: username, password: password })
                 });
                 const data = await response.json();
 
