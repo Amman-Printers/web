@@ -1,5 +1,5 @@
 const CONFIG = {
     // Replace this with your deployed Google Apps Script Web App URL
-    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz7xnsr6DE9mt60xHeDFH_Fbhoy-ktELWM-Ma5_4wHarVgDY72VxW6Gk_OVx_EfC-DF/exec',
+    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzrs4ZT1IMsHu-tee0Tvz08-9Zev3yotuCCLxW-Fd_bmfE9GphoEiG57XiVUuXYXCgkOA/exec',
     API_TOKEN: 'gfghguytuyghgght6756hgfh67r'
 };
