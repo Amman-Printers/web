@@ -2,6 +2,8 @@
 const LOGIN_SHEET = 'Login';
 const ORDER_SHEET = 'Orders';
 
+const API_TOKEN = 'gfghguytuyghgght6756hgfh67r';
+
 // Entry Points
 function doGet(e) {
   const lock = LockService.getScriptLock();
@@ -36,6 +38,12 @@ function handleRequest(e) {
     }
   } catch (err) {
     return output.setContent(JSON.stringify({ result: 'error', message: 'Invalid JSON' }));
+  }
+
+  // Verify API Token
+  const receivedToken = params.apitoken || params.apiToken;
+  if (!receivedToken || receivedToken !== API_TOKEN) {
+      return output.setContent(JSON.stringify({ result: 'error', message: 'Invalid API Token' }));
   }
 
   const action = params.action || '';

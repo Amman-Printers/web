@@ -20,7 +20,7 @@ async function loadOrder() {
     container.classList.add('hidden');
 
     try {
-        const res = await fetch(CONFIG.SCRIPT_URL + '?action=getOrders');
+        const res = await fetch(CONFIG.SCRIPT_URL + '?action=getOrders&apitoken=' + CONFIG.API_TOKEN);
         const data = await res.json();
         
         if (data.result === 'success') {
@@ -57,7 +57,7 @@ async function handleUpdate(e) {
     try {
         const res = await fetch(CONFIG.SCRIPT_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: 'update', orderid: id, paymentStatus: payment, name: name })
+            body: JSON.stringify({ action: 'update', orderid: id, paymentStatus: payment, name: name, apiToken: CONFIG.API_TOKEN })
         });
         const response = await res.json();
 

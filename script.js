@@ -17,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const params = new URLSearchParams({
                     action: 'login',
                     user: username,
-                    password: password
+                    password: password,
+                    apitoken: CONFIG.API_TOKEN
                 });
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?${params.toString()}`);
                 const data = await response.json();

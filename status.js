@@ -20,7 +20,7 @@ async function fetchOrders() {
     tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Loading orders...</td></tr>';
 
     try {
-        const res = await fetch(CONFIG.SCRIPT_URL + '?action=getOrders');
+        const res = await fetch(CONFIG.SCRIPT_URL + '?action=getOrders&apitoken=' + CONFIG.API_TOKEN);
         const data = await res.json();
         
         if (data.result === 'success') {

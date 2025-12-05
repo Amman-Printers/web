@@ -161,6 +161,7 @@ async function handleSubmit(e) {
     payload.paymentStatus = "";
     payload.paymentRef = "";
     payload.action = 'create'; // For GAS
+    payload.apiToken = CONFIG.API_TOKEN;
 
 
     try {
