@@ -277,8 +277,10 @@ async function generatePDF() {
              if (parseInt(fraction) > 0) { str += "And " + convert(fraction) + "Paise "; }
              return str + "Only";
         };
+    console.log(numToWords(allAmt.toFixed(2)));
     
-    safeGet("ru").setText(numToWords(allAmt));
+    safeGet("ru").setText(numToWords(allAmt.toFixed(2)));
+
 
     try { form.flatten(); } catch (err) {}
 
