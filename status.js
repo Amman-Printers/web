@@ -22,23 +22,15 @@ async function fetchOrders() {
     tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Loading orders...</td></tr>';
 
     try {
-        // MOCK DATA
-        // await new Promise(resolve => setTimeout(resolve, 1000));
-        // const mockOrders = Array.from({ length: 10 }, (_, i) => ({
-        //     orderid: 1000 + i,
-        //     name: `Customer ${i + 1}`,
-        //     orderDate: new Date().toLocaleDateString('en-GB'),
-        //     totalamt: (Math.random() * 1000).toFixed(2),
-        //     paymentStatus: Math.random() > 0.5 ? 'Paid' : 'Pending'
-        // }));
-        
-        // REAL FETCH
         const res = await fetch(CONFIG.SCRIPT_URL + '?action=getOrders');
         const data = await res.json();
-        allOrders = data.result;
         
-        allOrders = mockOrders;
-        renderOrders(allOrders);
+        if (data.result === 'success') {
+             allOrders = data.data; // Corrected from data.result to data.data based on APPS_SCRIPT.js
+             renderOrders(allOrders);
+        } else {
+             throw new Error(data.message || 'Failed to fetch orders');
+        }
 
     } catch (error) {
         console.error(error);

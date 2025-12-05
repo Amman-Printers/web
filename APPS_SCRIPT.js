@@ -1,26 +1,33 @@
-// Google Apps Script Code
-// Copy and paste this into your Google Apps Script project
+// CONFIG
+const LOGIN_SHEET = 'Login';
+const ORDER_SHEET = 'Orders';
 
-const SHEET_ID = 'YOUR_SPREADSHEET_ID_HERE'; // Replace with your actual Sheet ID
-
+// Entry Points
 function doGet(e) {
-  return handleRequest(e);
+  const lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  try {
+    return handleRequest(e);
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function doPost(e) {
-  return handleRequest(e);
+  const lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+  try {
+    return handleRequest(e);
+  } finally {
+    lock.releaseLock();
+  }
 }
 
+// Request Dispatcher
 function handleRequest(e) {
-  // Enable CORS
-  const output = ContentService.createTextOutput();
-  output.setMimeType(ContentService.MimeType.JSON);
-  
-  // Handle CORS preflight or simple requests
-  // Note: GAS doesn't fully support OPTIONS, but we can return JSON for everything
-  
+  const output = ContentService.createTextOutput().setMimeType(ContentService.MimeType.JSON);
   let params = {};
-  
+
   try {
     if (e.postData && e.postData.contents) {
       params = JSON.parse(e.postData.contents);
@@ -28,156 +35,152 @@ function handleRequest(e) {
       params = e.parameter;
     }
   } catch (err) {
-    return output.setContent(JSON.stringify({ status: 'error', message: 'Invalid JSON' }));
+    return output.setContent(JSON.stringify({ result: 'error', message: 'Invalid JSON' }));
   }
 
-  const action = params.action;
-  
+  const action = params.action || '';
+
   try {
-    let result;
     switch (action) {
       case 'login':
-        result = handleLogin(params);
-        break;
+        return output.setContent(JSON.stringify(handleLogin(params)));
+
       case 'create':
-        result = handleCreateOrder(params);
-        break;
+        return output.setContent(JSON.stringify(handleCreateOrder(params)));
+
       case 'getOrders':
-        result = handleGetOrders(params);
-        break;
+        return output.setContent(JSON.stringify(handleGetOrders()));
+
       case 'update':
-        result = handleUpdateOrder(params);
-        break;
+        return output.setContent(JSON.stringify(handleUpdateOrder(params)));
+
       default:
-        result = { status: 'error', message: 'Unknown action' };
+        return output.setContent(JSON.stringify({ result: 'error', message: 'Unknown action' }));
     }
-    return output.setContent(JSON.stringify(result));
   } catch (err) {
-    return output.setContent(JSON.stringify({ status: 'error', message: err.toString() }));
+    return output.setContent(JSON.stringify({ result: 'error', error: err.toString() }));
   }
 }
 
+// Get/Create Sheet
 function getSheet(name) {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(name);
+
   if (!sheet) {
     sheet = ss.insertSheet(name);
-    // Initialize headers if new
-    if (name === 'Login') {
+
+    if (name === LOGIN_SHEET) {
       sheet.appendRow(['Mail', 'pwd']);
-      sheet.appendRow(['admin', 'admin']); // Default user
-    } else if (name === 'Orders') {
+      sheet.appendRow(['admin', 'admin']); // Default login
+    }
+
+    if (name === ORDER_SHEET) {
       const headers = [
-        'orderid', 'name', 'phone', 'gst', 'code', 'address',
-        'particular1', 'book1', 'rate1', 'particular2', 'book2', 'rate2',
-        'particular3', 'book3', 'rate3', 'particular4', 'book4', 'rate4',
-        'particular5', 'book5', 'rate5', 'particular6', 'book6', 'rate6',
-        'particular7', 'book7', 'rate7', 'particular8', 'book8', 'rate8',
-        'particular9', 'book9', 'rate9',
-        'count', 'noOfCopies', 'totalamt', 'pendingamt', 'paid',
-        'paymentId', 'paymentStatus', 'paymentRef', 'lastUpdateTimestamp', 'orderDate'
+        "orderid", "name", "phone", "gst", "code", "address",
+        "particular1", "book1", "rate1",
+        "particular2", "book2", "rate2",
+        "particular3", "book3", "rate3",
+        "particular4", "book4", "rate4",
+        "particular5", "book5", "rate5",
+        "particular6", "book6", "rate6",
+        "particular7", "book7", "rate7",
+        "particular8", "book8", "rate8",
+        "particular9", "book9", "rate9",
+        "count", "noOfCopies", "totalamt", "pendingamt", "paid",
+        "paymentId", "paymentStatus", "paymentRef",
+        "lastUpdateTimestamp", "orderDate"
       ];
       sheet.appendRow(headers);
+      sheet.setFrozenRows(1);
     }
   }
+
   return sheet;
 }
 
+// LOGIN Handler
 function handleLogin(params) {
-  const sheet = getSheet('Login');
+  const sheet = getSheet(LOGIN_SHEET);
   const data = sheet.getDataRange().getValues();
-  // Skip header
+
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] == params.user && data[i][1] == params.password) {
-      return { status: 'success', message: 'Login successful' };
+      return { result: 'success', message: 'Login successful' };
     }
   }
-  return { status: 'error', message: 'Invalid credentials' };
+  return { result: 'error', message: 'Invalid credentials' };
 }
 
+// CREATE Order Handler
 function handleCreateOrder(params) {
-  const sheet = getSheet('Orders');
+  const sheet = getSheet(ORDER_SHEET);
   const lastRow = sheet.getLastRow();
-  // Generate Order ID (simple increment or timestamp)
+
   const orderId = lastRow === 1 ? 1001 : (parseInt(sheet.getRange(lastRow, 1).getValue()) + 1);
-  
+
   const now = new Date();
   const orderDate = Utilities.formatDate(now, Session.getScriptTimeZone(), "dd-MMM-yyyy");
   const timestamp = now.toISOString();
 
-  const rowData = [
-    orderId, params.name, params.phone, params.gst, params.code, params.address,
-    params.particular1, params.book1, params.rate1,
-    params.particular2, params.book2, params.rate2,
-    params.particular3, params.book3, params.rate3,
-    params.particular4, params.book4, params.rate4,
-    params.particular5, params.book5, params.rate5,
-    params.particular6, params.book6, params.rate6,
-    params.particular7, params.book7, params.rate7,
-    params.particular8, params.book8, params.rate8,
-    params.particular9, params.book9, params.rate9,
-    params.count, params.noOfCopies, params.totalamt, params.pendingamt, params.paid,
-    params.paymentId, params.paymentStatus || 'Pending', params.paymentRef, timestamp, orderDate
-  ];
-
-  sheet.appendRow(rowData);
-  
-  // Return the created order object
-  const resultObj = {};
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  headers.forEach((header, index) => {
-    resultObj[header] = rowData[index];
+  const row = headers.map(header => {
+    if (header === "orderid") return orderId;
+    if (header === "lastUpdateTimestamp") return timestamp;
+    if (header === "orderDate") return orderDate;
+    return params[header] || "";
   });
 
-  return { status: 'success', result: [resultObj] };
+  sheet.appendRow(row);
+
+  const resultObj = {};
+  headers.forEach((h, i) => resultObj[h] = row[i]);
+
+  return { result: 'success', data: resultObj };
 }
 
-function handleGetOrders(params) {
-  const sheet = getSheet('Orders');
+// GET Orders Handler
+function handleGetOrders() {
+  const sheet = getSheet(ORDER_SHEET);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const results = [];
-  
-  // Return last 50 orders for performance
+
   const start = Math.max(1, data.length - 50);
-  
+
   for (let i = start; i < data.length; i++) {
-    const row = data[i];
     const obj = {};
-    headers.forEach((h, idx) => {
-      obj[h] = row[idx];
-    });
+    headers.forEach((h, idx) => obj[h] = data[i][idx]);
     results.push(obj);
   }
-  
-  return { status: 'success', result: results.reverse() }; // Newest first
+
+  return { result: 'success', data: results.reverse() };
 }
 
+// UPDATE Order Handler
 function handleUpdateOrder(params) {
-  const sheet = getSheet('Orders');
+  const sheet = getSheet(ORDER_SHEET);
   const data = sheet.getDataRange().getValues();
   const orderId = params.orderid;
-  
+  const headers = data[0];
+
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == orderId) { // Assuming orderid is first column
+    if (data[i][0] == orderId) {
       const rowIdx = i + 1;
-      
-      // Update specific fields
-      if (params.paymentStatus) sheet.getRange(rowIdx, 40).setValue(params.paymentStatus); // paymentStatus col index (approx)
-      if (params.name) sheet.getRange(rowIdx, 2).setValue(params.name);
-      // Add more fields as needed. Better to map column names to indices dynamically.
-      
-      // Dynamic update based on headers
-      const headers = data[0];
-      for (const key in params) {
+
+      Object.keys(params).forEach(key => {
         const colIdx = headers.indexOf(key);
         if (colIdx > -1) {
-           sheet.getRange(rowIdx, colIdx + 1).setValue(params[key]);
+          sheet.getRange(rowIdx, colIdx + 1).setValue(params[key]);
         }
-      }
+      });
 
-      return { status: 'success', message: 'Order updated' };
+      sheet.getRange(rowIdx, headers.indexOf("lastUpdateTimestamp") + 1)
+        .setValue(new Date().toISOString());
+
+      return { result: 'success', message: 'Order updated' };
     }
   }
-  return { status: 'error', message: 'Order not found' };
+
+  return { result: 'error', message: 'Order not found' };
 }

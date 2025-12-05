@@ -14,22 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus(null);
 
             try {
-                // In a real scenario, you would fetch from the Google Apps Script URL
                 const response = await fetch(CONFIG.SCRIPT_URL + '?action=login', {
                     method: 'POST',
                     body: JSON.stringify({ user: username, password: password })
                 });
                 const data = await response.json();
 
-                // MOCK LOGIN FOR DEMO PURPOSES until GAS is set up
-                // Remove this block and uncomment above when GAS is ready
-                console.log("Attempting login with", username, password);
-                
-                // Simulating network delay
-                // await new Promise(resolve => setTimeout(resolve, 1000));
-
-                if (username === 'admin' && password === 'admin') { // Simple check for now, should be server side
+                if (data.result === 'success') {
                      setStatus('success');
+                     sessionStorage.setItem('isLoggedIn', 'true'); // Set session
                      setTimeout(() => {
                          window.location.href = 'form.html';
                      }, 800);

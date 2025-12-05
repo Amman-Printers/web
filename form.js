@@ -174,9 +174,9 @@ async function handleSubmit(e) {
         });
         const response = await res.json();
 
-        if (response.status === 'success') {
-            orderId = response.result[0].orderid;
-            queryData = response.result[0];
+        if (response.result === 'success') {
+            orderId = response.data.orderid;
+            queryData = response.data;
             
             statusDiv.innerHTML = `
                 <div class="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 shadow-sm animate-fade-in">
@@ -194,7 +194,7 @@ async function handleSubmit(e) {
             document.getElementById('downloadPdfBtn').disabled = false;
             submitBtn.textContent = 'Order Created';
         } else {
-            throw new Error('Submission failed');
+            throw new Error(response.message || 'Submission failed');
         }
 
     } catch (error) {
@@ -206,7 +206,7 @@ async function handleSubmit(e) {
                 </svg>
                 <div>
                     <strong class="font-bold block">System Error</strong>
-                    <span class="text-sm opacity-90">Something went wrong. Please try again.</span>
+                    <span class="text-sm opacity-90">${error.message || 'Something went wrong. Please try again.'}</span>
                 </div>
             </div>
         `;
