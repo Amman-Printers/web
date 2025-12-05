@@ -144,7 +144,7 @@ async function generateOrderPDF(queryData) {
         };
 
         // ===================== HEADER SECTION =====================
-        drawCenterAligned("TAX INVOICE", y, { size: 10, font: helvBold });
+        drawCenterAligned("         ", y, { size: 10, font: helvBold });
         y -= 12;
 
         drawCenterAligned("Sri Amman Printers", y, { size: 14, font: helvBold });
