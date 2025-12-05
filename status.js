@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // if (!sessionStorage.getItem('isLoggedIn')) {
-    //     window.location.href = 'index.html';
-    // }
+    if (!sessionStorage.getItem('isLoggedIn')) {
+        window.location.href = 'index.html';
+    }
     fetchOrders();
     
     document.getElementById('searchOrder').addEventListener('input', (e) => {
