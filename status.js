@@ -59,7 +59,9 @@ function renderOrders(orders) {
                 </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a href="#" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">View</a>
+                <button onclick="downloadOrderPdf(${order.orderid})" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">
+                    Download
+                </button>
             </td>
         </tr>
     `).join('');
@@ -71,4 +73,21 @@ function filterOrders(term) {
         o.name.toLowerCase().includes(term)
     );
     renderOrders(filtered);
+    renderOrders(filtered);
+}
+
+async function downloadOrderPdf(id) {
+    const order = allOrders.find(o => o.orderid == id);
+    if (!order) {
+        alert('Order data not found');
+        return;
+    }
+    
+    // Create button loading state feedback if needed, but for now just call generator
+    try {
+        await generateOrderPDF(order);
+    } catch (error) {
+        console.error('PDF Generation failed:', error);
+        alert('Failed to generate PDF. See console for details.');
+    }
 }
