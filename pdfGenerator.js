@@ -249,34 +249,34 @@ async function generateOrderPDF(queryData) {
         y -= 8;
 
         // ===================== TOTALS SECTION =====================
-        const rightColLabel = right - 80;
-        const rightColValue = right;
+        // const rightColLabel = right - 80;
+        // const rightColValue = right;
 
-        drawRightAligned("Subtotal:", rightColLabel, y, { size: 8, font: helv });
-        drawRightAligned(`Rs. ${subTotalAmount.toFixed(2)}`, rightColValue, y, { size: 8, font: helvBold });
-        y -= 10;
+        // drawRightAligned("Subtotal:", rightColLabel, y, { size: 8, font: helv });
+        // drawRightAligned(`Rs. ${subTotalAmount.toFixed(2)}`, rightColValue, y, { size: 8, font: helvBold });
+        // y -= 10;
 
-        drawDottedLine(y + 2);
-        y -= 8;
+        // drawDottedLine(y + 2);
+        // y -= 8;
 
-        // IGST 3% Only
-        if (igst3Amount > 0) {
-            drawRightAligned("IGST @ 3%:", rightColLabel, y, { size: 8, font: helv });
-            drawRightAligned(`Rs. ${igst3Amount.toFixed(2)}`, rightColValue, y, { size: 8, font: helv });
-            y -= 9;
-        }
+        // // IGST 3% Only
+        // if (igst3Amount > 0) {
+        //     drawRightAligned("IGST @ 3%:", rightColLabel, y, { size: 8, font: helv });
+        //     drawRightAligned(`Rs. ${igst3Amount.toFixed(2)}`, rightColValue, y, { size: 8, font: helv });
+        //     y -= 9;
+        // }
 
         drawSolidLine(y + 2);
         y -= 8;
 
         drawRightAligned("TOTAL:", rightColLabel, y, { size: 10, font: helvBold });
-        drawRightAligned(`Rs. ${grandTotalAmount.toFixed(2)}`, rightColValue, y, { size: 10, font: helvBold });
+        drawRightAligned(`Rs. ${subTotalAmount.toFixed(2)}`, rightColValue, y, { size: 10, font: helvBold });
         y -= 14;
 
         drawSolidLine(y + 4);
         y -= 10;
 
-        const words = numToWords(grandTotalAmount);
+        const words = numToWords(subTotalAmount);
         thermalPage.drawText("Amount (in words):", { x: left, y: y, size: 8, font: helvBold });
         y -= 10;
         
