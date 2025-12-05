@@ -5,9 +5,10 @@ let orderId = "";
 
 document.addEventListener('DOMContentLoaded', () => {
     // Check auth
-    // if (!sessionStorage.getItem('isLoggedIn')) {
-    //     window.location.href = 'index.html';
-    // }
+    // Check auth
+    if (!sessionStorage.getItem('isLoggedIn')) {
+        window.location.href = 'index.html';
+    }
 
     // Initial row
     addRow();
