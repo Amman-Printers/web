@@ -166,10 +166,6 @@ async function handleSubmit(e) {
     payload.action = 'create'; // For GAS
 
 
-    document.getElementById('downloadPdfBtn').classList.remove('hidden');
-    document.getElementById('downloadPdfBtn').disabled = false;
-    submitBtn.textContent = 'Order Created';
-
     try {
         // REAL SUBMISSION
         const res = await fetch(CONFIG.SCRIPT_URL, {
