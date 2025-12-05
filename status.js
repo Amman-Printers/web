@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    if (!sessionStorage.getItem('isLoggedIn')) {
-        window.location.href = 'index.html';
-    }
+    // Auth handled by auth.js
     fetchOrders();
     
     document.getElementById('searchOrder').addEventListener('input', (e) => {

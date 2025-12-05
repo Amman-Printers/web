@@ -4,11 +4,7 @@ let queryData = {};
 let orderId = "";
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check auth
-    // Check auth
-    if (!sessionStorage.getItem('isLoggedIn')) {
-        window.location.href = 'index.html';
-    }
+    // Check auth verified by auth.js
 
     // Initial row
     addRow();
