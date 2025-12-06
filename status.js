@@ -43,28 +43,38 @@ function renderOrders(orders) {
         return;
     }
 
-    tbody.innerHTML = orders.map(order => `
+    tbody.innerHTML = orders.map(order => {
+        // Format date to DD-MM-YYYY
+        let dateStr = order.orderDate;
+        if (dateStr) {
+            const dateObj = new Date(dateStr);
+            if (!isNaN(dateObj)) {
+                // Ensure correct format if not already string. 
+                // However, GAS usually returns string "dd-MMM-yyyy". 
+                // If it's standard ISO or Date object, we format.
+                // Request is DD-MM-CCyy (e.g. 05-12-2025)
+                const d = String(dateObj.getDate()).padStart(2, '0');
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const y = dateObj.getFullYear();
+                dateStr = `${d}-${m}-${y}`;
+            }
+        }
+        
+        return `
         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#${order.orderid}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${order.name}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${order.orderDate}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${order.phone || '-'}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${dateStr}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">₹${order.totalamt}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    order.paymentStatus === 'Paid' 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                }">
-                    ${order.paymentStatus || 'Pending'}
-                </span>
-            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600 dark:text-red-400">₹${order.pendingamt}</td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button onclick="downloadOrderPdf(${order.orderid})" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">
                     Download
                 </button>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 function filterOrders(term) {
