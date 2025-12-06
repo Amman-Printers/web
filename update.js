@@ -27,7 +27,9 @@ const state = {
     totals: {
         copies: 0,
         amount: 0,
-        pending: 0
+        pending: 0,
+        paid: 0,        // Current entry
+        previousPaid: 0 // Previously paid (from DB)
     },
     rowIdCounter: 1
 };
@@ -199,20 +201,23 @@ function populateForm(order) {
 
     // Amounts
     // Amounts
-    state.totals.paid = parseFloat(order.amountPaid || 0); 
-    
-    // Legacy support: If amountPaid is 0 but pendingamt exists and != totalamt, infer paid amount
-    if (state.totals.paid === 0 && order.pendingamt !== undefined) {
+    // Calculate previous paid amount
+    let previousPaid = parseFloat(order.paid || 0);
+
+    // Legacy/Correction support: If 'paid' field is missing/zero but pending < total, infer paid
+    if (previousPaid === 0 && order.pendingamt !== undefined) {
         const total = parseFloat(order.totalamt || 0);
         const pending = parseFloat(order.pendingamt || 0);
         if (total > 0 && pending < total) {
-             state.totals.paid = total - pending;
+             previousPaid = total - pending;
         }
     }
-
-    if (isNaN(state.totals.paid)) state.totals.paid = 0;
     
-    document.getElementById('amountPaid').value = state.totals.paid.toFixed(2);
+    state.totals.previousPaid = previousPaid;
+    state.totals.paid = 0; // Initialize current entry to 0
+    
+    document.getElementById('amountPaid').value = ""; // Show empty or 0 to encourage input? User asked for zero.
+    document.getElementById('amountPaid').value = "0"; // Explicitly 0 as requested
 
     // User Info
     document.getElementById('createdByUser').textContent = order.createdByUser || 'N/A';
@@ -312,9 +317,12 @@ function calculateTotals() {
         total += parseFloat(r.book || 0) * parseFloat(r.rate || 0);
     });
     
-    // Tally Pending = Total - Paid
-    const paid = state.totals.paid;
-    let pending = total - paid;
+    // Tally Pending = Total - (PreviousPaid + CurrentPaid)
+    const currentPaid = state.totals.paid || 0;
+    const previousPaid = state.totals.previousPaid || 0;
+    let totalPaid = previousPaid + currentPaid;
+    let pending = total - totalPaid;
+
     // ensure pending is not negative? or allow it (refund)?
     // Usually pending >= 0. But if paid > total, pending is -ve (overpayment). Allow it.
     
