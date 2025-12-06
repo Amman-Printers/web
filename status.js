@@ -1,12 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Auth handled by auth.js
+    initializeFilters();
     fetchOrders();
     
-    document.getElementById('searchOrder').addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        filterOrders(term);
-    });
+    document.getElementById('searchOrder').addEventListener('input', applyFilters);
+    document.getElementById('filterMonth').addEventListener('change', applyFilters);
+    document.getElementById('filterYear').addEventListener('change', applyFilters);
 });
+
+function initializeFilters() {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    // Populate Year Dropdown (Current - 2 to Current + 2)
+    const yearSelect = document.getElementById('filterYear');
+    yearSelect.innerHTML = '';
+    for (let i = currentYear - 2; i <= currentYear + 2; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        if (i === currentYear) option.selected = true;
+        yearSelect.appendChild(option);
+    }
+    
+    // Set Month Default
+    document.getElementById('filterMonth').value = currentMonth;
+}
 
 function logout() {
     sessionStorage.removeItem('isLoggedIn');
@@ -25,7 +45,7 @@ async function fetchOrders() {
         
         if (data.result === 'success') {
              allOrders = data.data; // Corrected from data.result to data.data based on APPS_SCRIPT.js
-             renderOrders(allOrders);
+             applyFilters(); // Apply default filters (current month)
         } else {
              throw new Error(data.message || 'Failed to fetch orders');
         }
@@ -77,14 +97,41 @@ function renderOrders(orders) {
     `}).join('');
 }
 
-function filterOrders(term) {
-    const filtered = allOrders.filter(o => 
-        o.orderid.toString().includes(term) || 
-        o.name.toLowerCase().includes(term)
-    );
-    renderOrders(filtered);
+function applyFilters() {
+    const term = document.getElementById('searchOrder').value.toLowerCase();
+    const month = document.getElementById('filterMonth').value;
+    const year = document.getElementById('filterYear').value;
+    
+    const filtered = allOrders.filter(o => {
+        // Text Search
+        const matchesTerm = !term || 
+            o.orderid.toString().includes(term) || 
+            o.name.toLowerCase().includes(term);
+            
+        // Date Filter
+        let matchesDate = true;
+        if (month !== "") {
+            // Parse order date (dd-MMM-yyyy from GAS)
+            // Note: Date parsing can be tricky. Using Date constructor usually works for standard formats,
+            // but for "dd-MMM-yyyy", modern browsers handle it, or we parse manually.
+            // Let's rely on Date.parse or new Date()
+            const d = new Date(o.orderDate);
+            if (!isNaN(d)) {
+                // Check Month and Year
+                // Note: filterMonth value is 0-11
+                if (d.getMonth() != month || d.getFullYear() != year) {
+                    matchesDate = false;
+                }
+            }
+        }
+        
+        return matchesTerm && matchesDate;
+    });
+
     renderOrders(filtered);
 }
+
+// Removed old filterOrders function as it is replaced by applyFilters
 
 async function downloadOrderPdf(id) {
     const order = allOrders.find(o => o.orderid == id);

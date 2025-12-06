@@ -53,9 +53,31 @@
                 </div>
 
                 <div class="flex gap-4">
+                    <div class="flex gap-4 items-center">
+                        <select id="filterMonth"
+                            class="py-2 pl-3 pr-8 rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                            <option value="">All Months</option>
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                        <select id="filterYear"
+                            class="py-2 pl-3 pr-8 rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
                     <div class="relative">
-                        <input type="text" id="searchOrder" placeholder="Search by Order ID or Name..."
-                            class="pl-10 pr-4 py-2 rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                        <input type="text" id="searchOrder" placeholder="Search..."
+                            class="pl-10 pr-4 py-2 w-48 rounded-xl border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                 stroke="currentColor" class="w-5 h-5 text-gray-400">
