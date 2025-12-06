@@ -65,6 +65,12 @@ function initializeApp() {
             state.customer[field] = e.target.value;
         });
     });
+
+    // Amount Paid listener
+    document.getElementById('amountPaid').addEventListener('input', (e) => {
+        state.totals.paid = parseFloat(e.target.value) || 0;
+        calculateTotals();
+    });
 }
 
 function showStatus(elementId, type, message) {
@@ -191,11 +197,18 @@ function populateForm(order) {
         state.rows.push({ id: state.rowIdCounter++, particular: "", book: "", rate: "" });
     }
 
-    renderRows();
+    // Amounts
+    state.totals.paid = parseFloat(order.amountPaid || 0); // Assuming key is 'amountPaid'
+    if (isNaN(state.totals.paid)) state.totals.paid = 0;
     
-    // Pending Amount
-    state.totals.pending = parseFloat(order.pendingamt || 0);
-    document.getElementById('pendingAmount').textContent = state.totals.pending.toFixed(2);
+    document.getElementById('amountPaid').value = state.totals.paid;
+
+    // User Info
+    document.getElementById('createdByUser').textContent = order.createdByUser || 'N/A';
+    document.getElementById('lastUpdatedByUser').textContent = order.lastUpdatedByUser || 'N/A';
+
+    renderRows();
+    // calculateTotals called in renderRows will update pending based on items and paid input
 
     document.getElementById('updateForm').classList.remove('hidden');
 }
@@ -288,14 +301,23 @@ function calculateTotals() {
         total += parseFloat(r.book || 0) * parseFloat(r.rate || 0);
     });
     
+    // Tally Pending = Total - Paid
+    const paid = state.totals.paid;
+    let pending = total - paid;
+    // ensure pending is not negative? or allow it (refund)?
+    // Usually pending >= 0. But if paid > total, pending is -ve (overpayment). Allow it.
+    
     state.totals.copies = copies;
     state.totals.amount = total.toFixed(2);
+    state.totals.pending = pending.toFixed(2);
     
     document.getElementById('totalCopies').textContent = state.totals.copies;
     document.getElementById('totalAmount').textContent = state.totals.amount;
+    document.getElementById('pendingAmount').textContent = state.totals.pending;
 }
 
 function prepareSubmissionData() {
+    const username = sessionStorage.getItem('username') || 'Unknown';
     const payload = {
         action: 'update',
         orderid: state.orderId, // Note: Script expects 'orderid' lowercase based on previous code
@@ -307,8 +329,14 @@ function prepareSubmissionData() {
         count: state.rows.length,
         noOfCopies: state.totals.copies,
         totalamt: state.totals.amount,
+        amountPaid: state.totals.paid, // Send Amount Paid
         pendingamt: state.totals.pending,
         apiToken: CONFIG.API_TOKEN,
+        
+        // User Tracking
+        createdByUser: state.orderData.createdByUser || '', // Preserve original creator
+        lastUpdatedByUser: username, // Update last updater
+        
         // Preserve existing fields
         paid: state.orderData.paid || 0,
         paymentId: state.orderData.paymentId || "",

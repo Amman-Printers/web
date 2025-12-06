@@ -189,15 +189,6 @@ async function generateOrderPDF(queryData) {
         thermalPage.drawText((queryData.name || "").toString(), { x: left + 4, y: y, size: 9, font: helv });
         y -= 10;
 
-        if (queryData.address) {
-            thermalPage.drawText(`Address: ${(queryData.address || "").toString()}`, {
-                x: left + 4, y: y, size: 8, font: helv,
-                maxWidth: pageWidth - left * 2 - 4,
-            });
-            y -= 9;
-            if ((queryData.address || "").length > 35) y -= 9; 
-        }
-
         if (queryData.gst) {
             thermalPage.drawText(`GSTIN: ${(queryData.gst || "").toString()}`, { x: left + 4, y: y, size: 8, font: helv });
             y -= 9;
@@ -209,6 +200,16 @@ async function generateOrderPDF(queryData) {
         } else {
             y -= 3;
         }
+
+        if (queryData.address) {
+            thermalPage.drawText(`Address: ${(queryData.address || "").toString()}`, {
+                x: left + 4, y: y, size: 8, font: helv,
+                maxWidth: pageWidth - left * 2 - 4,
+            });
+            y -= 9;
+            if ((queryData.address || "").length > 35) y -= 9; 
+        }
+
 
         drawDottedLine(y + 4);
         y -= 8;

@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.result === 'success') {
                      setStatus('success');
                      sessionStorage.setItem('isLoggedIn', 'true'); // Set session
+                     sessionStorage.setItem('username', username); // Store username
                      setTimeout(() => {
                          window.location.href = 'form.html';
                      }, 800);
