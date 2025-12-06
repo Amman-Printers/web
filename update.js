@@ -349,7 +349,7 @@ function prepareSubmissionData() {
         noOfCopies: state.totals.copies,
         totalamt: state.totals.amount,
         amountPaid: state.totals.paid, // Send Amount Paid
-        pendingamt: state.totals.pending,
+        // pendingamt removed
         apiToken: CONFIG.API_TOKEN,
         
         // User Tracking

@@ -157,10 +157,12 @@ async function handleSubmit(e) {
 
     payload.noOfCopies = tempNoOfCopies;
     payload.totalamt = tempTotalAmount.toFixed(2);
-    payload.pendingamt = tempTotalAmount.toFixed(2);
-    payload.paid = "";
+    // payload.pendingamt removed as per requirements
+    payload.paid = "0"; // Initialize as 0 or empty? "paid" field in create usually implies initial payment. 
+                        // If user wants removed 'pendingamt', likely 'paid' is 0 initially.
+                        // Existing code had payload.paid = "";. Use "0".
     payload.paymentId = "";
-    payload.paymentStatus = "";
+    payload.paymentStatus = "Pending"; // Default status
     payload.paymentRef = "";
     
     // User Tracking

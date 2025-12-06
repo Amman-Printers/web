@@ -95,9 +95,10 @@ function getSheet(name) {
         "particular7", "book7", "rate7",
         "particular8", "book8", "rate8",
         "particular9", "book9", "rate9",
-        "count", "noOfCopies", "totalamt", "pendingamt", "paid",
+        "count", "noOfCopies", "totalamt", "paid", // pendingamt removed
         "paymentId", "paymentStatus", "paymentRef",
-        "lastUpdateTimestamp", "orderDate"
+        "lastUpdateTimestamp", "orderDate",
+        "createdByUser", "lastUpdatedByUser" // Added User Tracking
       ];
       sheet.appendRow(headers);
       sheet.setFrozenRows(1);
@@ -136,6 +137,8 @@ function handleCreateOrder(params) {
     if (header === "orderid") return orderId;
     if (header === "lastUpdateTimestamp") return timestamp;
     if (header === "orderDate") return orderDate;
+    if (header === "createdByUser") return params.createdByUser || "";
+    if (header === "lastUpdatedByUser") return params.lastUpdatedByUser || "";
     return params[header] || "";
   });
 
@@ -159,6 +162,13 @@ function handleGetOrders() {
   for (let i = start; i < data.length; i++) {
     const obj = {};
     headers.forEach((h, idx) => obj[h] = data[i][idx]);
+    
+    // Dynamically calculate pending for frontend compatibility
+    // resultObj.pendingamt is not in sheet anymore, assume total - paid
+    const total = parseFloat(obj.totalamt || 0);
+    const paid = parseFloat(obj.paid || 0);
+    obj.pendingamt = (total - paid).toFixed(2);
+    
     results.push(obj);
   }
 
@@ -177,15 +187,39 @@ function handleUpdateOrder(params) {
       const rowIdx = i + 1;
 
       Object.keys(params).forEach(key => {
+        // Skip special handling fields
+        if (key === 'amountPaid') return;
+        
         const colIdx = headers.indexOf(key);
         if (colIdx > -1) {
           sheet.getRange(rowIdx, colIdx + 1).setValue(params[key]);
         }
       });
+      
+      // Handle Incremental Payment
+      if (params.amountPaid) {
+          const paidCol = headers.indexOf("paid");
+          if (paidCol > -1) {
+              const currentPaid = parseFloat(data[i][paidCol] || 0);
+              const additional = parseFloat(params.amountPaid || 0);
+              const newTotalPaid = currentPaid + additional;
+              sheet.getRange(rowIdx, paidCol + 1).setValue(newTotalPaid);
+              
+              // Update status?
+              const totalCol = headers.indexOf("totalamt");
+              const statusCol = headers.indexOf("paymentStatus");
+              if (totalCol > -1 && statusCol > -1) {
+                  // Note: params.totalamt might be updated in this very request, so check params first, else sheet
+                  const total = params.totalamt ? parseFloat(params.totalamt) : parseFloat(data[i][totalCol] || 0);
+                  const status = (newTotalPaid >= total) ? "Paid" : "Pending";
+                  sheet.getRange(rowIdx, statusCol + 1).setValue(status);
+              }
+          }
+      }
 
-      sheet.getRange(rowIdx, headers.indexOf("lastUpdateTimestamp") + 1)
-        .setValue(new Date().toISOString());
-
+      const timeCol = headers.indexOf("lastUpdateTimestamp");
+      if(timeCol > -1) sheet.getRange(rowIdx, timeCol + 1).setValue(new Date().toISOString());
+      
       return { result: 'success', message: 'Order updated' };
     }
   }
@@ -222,9 +256,10 @@ function setup() {
       "particular7", "book7", "rate7",
       "particular8", "book8", "rate8",
       "particular9", "book9", "rate9",
-      "count", "noOfCopies", "totalamt", "pendingamt", "paid",
+      "count", "noOfCopies", "totalamt", "paid", // pendingamt removed
       "paymentId", "paymentStatus", "paymentRef",
-      "lastUpdateTimestamp", "orderDate"
+      "lastUpdateTimestamp", "orderDate",
+      "createdByUser", "lastUpdatedByUser"
     ];
 
     ordersSheet.appendRow(headers);
