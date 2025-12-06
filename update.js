@@ -198,10 +198,21 @@ function populateForm(order) {
     }
 
     // Amounts
-    state.totals.paid = parseFloat(order.amountPaid || 0); // Assuming key is 'amountPaid'
+    // Amounts
+    state.totals.paid = parseFloat(order.amountPaid || 0); 
+    
+    // Legacy support: If amountPaid is 0 but pendingamt exists and != totalamt, infer paid amount
+    if (state.totals.paid === 0 && order.pendingamt !== undefined) {
+        const total = parseFloat(order.totalamt || 0);
+        const pending = parseFloat(order.pendingamt || 0);
+        if (total > 0 && pending < total) {
+             state.totals.paid = total - pending;
+        }
+    }
+
     if (isNaN(state.totals.paid)) state.totals.paid = 0;
     
-    document.getElementById('amountPaid').value = state.totals.paid;
+    document.getElementById('amountPaid').value = state.totals.paid.toFixed(2);
 
     // User Info
     document.getElementById('createdByUser').textContent = order.createdByUser || 'N/A';

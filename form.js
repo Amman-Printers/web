@@ -153,6 +153,8 @@ async function handleSubmit(e) {
         payload[`rate${i + 1}`] = "";
     }
 
+    const username = sessionStorage.getItem('username') || 'Unknown';
+
     payload.noOfCopies = tempNoOfCopies;
     payload.totalamt = tempTotalAmount.toFixed(2);
     payload.pendingamt = tempTotalAmount.toFixed(2);
@@ -160,6 +162,11 @@ async function handleSubmit(e) {
     payload.paymentId = "";
     payload.paymentStatus = "";
     payload.paymentRef = "";
+    
+    // User Tracking
+    payload.createdByUser = username;
+    payload.lastUpdatedByUser = username;
+    
     payload.action = 'create'; // For GAS
     payload.apiToken = CONFIG.API_TOKEN;
 
