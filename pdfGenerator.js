@@ -201,6 +201,11 @@ async function generateOrderPDF(queryData) {
             y -= 3;
         }
 
+        if (queryData.phone) {
+            thermalPage.drawText(`Mobile: ${(queryData.phone || "").toString()}`, { x: left + 4, y: y, size: 8, font: helv });
+            y -= 9;
+        }
+
         if (queryData.address) {
             const addrPrefix = "Address: ";
             const addrText = (queryData.address || "").toString();
@@ -297,7 +302,7 @@ async function generateOrderPDF(queryData) {
         y -= 20;
         
         drawDottedLine(y + 10);
-        drawCenterAligned("Thank You! Visit Again.", y, { size: 9, font: helv });
+        drawCenterAligned("Thank You!", y, { size: 9, font: helv });
 
     } catch (err) {
         console.error("Thermal page failed", err);
