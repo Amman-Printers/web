@@ -202,12 +202,30 @@ async function generateOrderPDF(queryData) {
         }
 
         if (queryData.address) {
-            thermalPage.drawText(`Address: ${(queryData.address || "").toString()}`, {
-                x: left + 4, y: y, size: 8, font: helv,
-                maxWidth: pageWidth - left * 2 - 4,
-            });
+            const addrPrefix = "Address: ";
+            const addrText = (queryData.address || "").toString();
+            // Calculate available width for the address content
+            // left + 4 is starting X. maxWidth was pageWidth - left * 2 - 4.
+            const maxWidth = pageWidth - left * 2 - 4;
+            
+            // Simple word wrap helper since we can't easily rely on drawText's auto-wrap to give us the height consumed
+            const words = (addrPrefix + addrText).split(' ');
+            let currentLine = words[0];
+            
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = helv.widthOfTextAtSize(currentLine + " " + word, 8);
+                if (width < maxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    thermalPage.drawText(currentLine, { x: left + 4, y: y, size: 8, font: helv });
+                    y -= 9; // Move down for next line
+                    currentLine = word;
+                }
+            }
+            // Draw last line
+            thermalPage.drawText(currentLine, { x: left + 4, y: y, size: 8, font: helv });
             y -= 9;
-            if ((queryData.address || "").length > 35) y -= 9; 
         }
 
 
