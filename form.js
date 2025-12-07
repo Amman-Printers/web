@@ -205,7 +205,7 @@ async function handleSubmit(e) {
             
             const newOrderBtn = document.getElementById('startNewOrderBtn');
             newOrderBtn.classList.remove('hidden'); // Show New Order Button
-            newOrderBtn.addEventListener('click', () => window.location.reload());
+            newOrderBtn.addEventListener('click', resetApp);
 
             // Freeze Form
             const formInputs = document.querySelectorAll('input, textarea, button');
@@ -219,7 +219,6 @@ async function handleSubmit(e) {
         } else {
             throw new Error(response.message || 'Submission failed');
         }
-
     } catch (error) {
         console.error(error);
         statusDiv.innerHTML = `
@@ -236,6 +235,37 @@ async function handleSubmit(e) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Create Order';
     }
+}
+
+function resetApp() {
+    // 1. Reset Data
+    rows = [];
+    idCounter = 1;
+    queryData = {};
+    orderId = "";
+    document.getElementById('orderForm').reset();
+    
+    // 2. Reset UI
+    document.getElementById('itemsContainer').innerHTML = '';
+    document.getElementById('formStatus').innerHTML = '';
+    document.getElementById('downloadPdfBtn').classList.add('hidden');
+    document.getElementById('startNewOrderBtn').classList.add('hidden');
+    
+    // 3. Re-enable Inputs
+    const formInputs = document.querySelectorAll('input, textarea, button');
+    formInputs.forEach(input => {
+        input.disabled = false;
+        input.classList.remove('opacity-60', 'cursor-not-allowed');
+    });
+
+    // 4. Restore Submit Button
+    const submitBtn = document.getElementById('submitOrderBtn');
+    submitBtn.classList.remove('hidden');
+    submitBtn.textContent = 'Create Order';
+    submitBtn.disabled = false;
+
+    // 5. Initialize fresh row
+    addRow();
 }
 
 async function generatePDF() {
