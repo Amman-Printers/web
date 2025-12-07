@@ -175,8 +175,16 @@ async function generateOrderPDF(queryData) {
         // ===================== BILL METADATA SECTION =====================
         thermalPage.drawText(`Bill No: ${orderId}`, { x: left, y: y, size: 9, font: helvBold });
 
-        let dateStr = new Date(queryData.orderDate).toLocaleDateString("en-GB");
-        drawRightAligned(`Date: ${dateStr}`, right, y, { size: 9, font: helvBold });
+        // Format date helper
+        const formatDateDDMMYYYY = (dStr) => {
+            if (!dStr) return "";
+            const d = new Date(dStr);
+            if (isNaN(d.getTime())) return dStr; // Fallback
+            return d.toLocaleDateString("en-GB", { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        };
+
+        const displayDate = formatDateDDMMYYYY(queryData.orderDate);
+        drawRightAligned(`Date: ${displayDate}`, right, y, { size: 9, font: helvBold });
         y -= 12;
 
         drawDottedLine(y + 2);

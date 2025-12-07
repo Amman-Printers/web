@@ -129,7 +129,7 @@ function handleCreateOrder(params) {
   const orderId = lastRow === 1 ? 1001 : (parseInt(sheet.getRange(lastRow, 1).getValue()) + 1);
 
   const now = new Date();
-  const orderDate = Utilities.formatDate(now, Session.getScriptTimeZone(), "dd-MMM-yyyy");
+  const orderDate = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy-MM-dd");
   const timestamp = now.toISOString();
 
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
@@ -208,7 +208,18 @@ function handleGetOrders(params) {
     results.push(obj);
   }
 
-  return { result: 'success', data: results.reverse() };
+  return { 
+    result: 'success', 
+    data: results.reverse(),
+    debug: {
+        filterMonth: filterMonth,
+        filterYear: filterYear,
+        receivedParams: params,
+        totalRows: data.length,
+        startRow: start,
+        hasFilter: hasFilter
+    }
+  };
 }
 
 // UPDATE Order Handler
