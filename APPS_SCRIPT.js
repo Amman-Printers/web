@@ -173,16 +173,24 @@ function handleGetOrders(params) {
     if (hasFilter) {
        const dateCol = headers.indexOf("orderDate");
        if (dateCol > -1) {
-           const dateStr = data[i][dateCol]; // "dd-MMM-yyyy"
-           if (dateStr) {
-               const dateObj = new Date(dateStr);
-               if (!isNaN(dateObj)) {
-                   if (dateObj.getMonth() !== filterMonth || dateObj.getFullYear() !== filterYear) {
-                       continue; // Skip if no match
-                   }
-               } else {
-                   // Fallback for string parsing if Date fails on "dd-MMM-yyyy" in some locales
-                   // Typically new Date() works in GAS environment for this format.
+           const cellValue = data[i][dateCol];
+           let recordDate = null;
+
+           if (cellValue instanceof Date) {
+               // It's already a date object
+               recordDate = cellValue;
+           } else if (typeof cellValue === 'string') {
+               // Try parsing string
+               const parsed = new Date(cellValue);
+               if (!isNaN(parsed.getTime())) {
+                   recordDate = parsed;
+               }
+           }
+           
+           // If we have a valid date, check against filter
+           if (recordDate) {
+               if (recordDate.getMonth() !== filterMonth || recordDate.getFullYear() !== filterYear) {
+                   continue; // Skip if no match
                }
            }
        }
