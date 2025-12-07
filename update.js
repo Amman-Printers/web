@@ -128,7 +128,7 @@ async function handleSearch(e) {
     document.getElementById('downloadSection').classList.add('hidden');
 
     try {
-        const res = await fetch(`${CONFIG.SCRIPT_URL}?action=getOrders&apitoken=${CONFIG.API_TOKEN}`);
+        const res = await fetch(`${CONFIG.SCRIPT_URL}?action=getOrders&apitoken=${CONFIG.API_TOKEN}&orderid=${orderId}`);
         const data = await res.json();
 
         if (data.result === 'success') {

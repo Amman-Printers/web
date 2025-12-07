@@ -159,11 +159,11 @@ function handleGetOrders(params) {
 
   // Params for filtering
   // Expect params.month (0-11) and params.year (YYYY)
-  // If provided, we scan ALL data. If not provided, we stick to default pagination (last 50).
   const filterMonth = (params && params.month !== undefined && params.month !== "") ? parseInt(params.month) : null;
   const filterYear = (params && params.year !== undefined && params.year !== "") ? parseInt(params.year) : null;
+  const filterOrderId = (params && params.orderid !== undefined && params.orderid !== "") ? params.orderid.toString() : null;
   
-  const hasFilter = (filterMonth !== null && filterYear !== null);
+  const hasFilter = (filterMonth !== null && filterYear !== null) || (filterOrderId !== null);
   
   // If hasFilter, scan from row 1. Else scan last 50.
   const start = hasFilter ? 1 : Math.max(1, data.length - 50);
@@ -171,26 +171,30 @@ function handleGetOrders(params) {
   for (let i = start; i < data.length; i++) {
     // Check Filter First
     if (hasFilter) {
-       const dateCol = headers.indexOf("orderDate");
-       if (dateCol > -1) {
-           const cellValue = data[i][dateCol];
-           let recordDate = null;
+       // ORDER ID FILTER
+       if (filterOrderId) {
+           if (data[i][0].toString() !== filterOrderId) continue;
+       } 
+       // DATE FILTER
+       else if (filterMonth !== null) {
+           const dateCol = headers.indexOf("orderDate");
+           if (dateCol > -1) {
+               const cellValue = data[i][dateCol];
+               let recordDate = null;
 
-           if (cellValue instanceof Date) {
-               // It's already a date object
-               recordDate = cellValue;
-           } else if (typeof cellValue === 'string') {
-               // Try parsing string
-               const parsed = new Date(cellValue);
-               if (!isNaN(parsed.getTime())) {
-                   recordDate = parsed;
+               if (cellValue instanceof Date) {
+                   recordDate = cellValue;
+               } else if (typeof cellValue === 'string') {
+                   const parsed = new Date(cellValue);
+                   if (!isNaN(parsed.getTime())) {
+                       recordDate = parsed;
+                   }
                }
-           }
-           
-           // If we have a valid date, check against filter
-           if (recordDate) {
-               if (recordDate.getMonth() !== filterMonth || recordDate.getFullYear() !== filterYear) {
-                   continue; // Skip if no match
+               
+               if (recordDate) {
+                   if (recordDate.getMonth() !== filterMonth || recordDate.getFullYear() !== filterYear) {
+                       continue; // Skip if no match
+                   }
                }
            }
        }
@@ -200,7 +204,6 @@ function handleGetOrders(params) {
     headers.forEach((h, idx) => obj[h] = data[i][idx]);
     
     // Dynamically calculate pending for frontend compatibility
-    // resultObj.pendingamt is not in sheet anymore, assume total - paid
     const total = parseFloat(obj.totalamt || 0);
     const paid = parseFloat(obj.paid || 0);
     obj.pendingamt = (total - paid).toFixed(2);
@@ -214,9 +217,8 @@ function handleGetOrders(params) {
     debug: {
         filterMonth: filterMonth,
         filterYear: filterYear,
-        receivedParams: params,
+        filterOrderId: filterOrderId,
         totalRows: data.length,
-        startRow: start,
         hasFilter: hasFilter
     }
   };
