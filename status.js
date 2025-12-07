@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchOrders();
     
     document.getElementById('searchOrder').addEventListener('input', applyFilters);
-    document.getElementById('filterMonth').addEventListener('change', applyFilters);
-    document.getElementById('filterYear').addEventListener('change', applyFilters);
+    document.getElementById('filterMonth').addEventListener('change', fetchOrders);
+    document.getElementById('filterYear').addEventListener('change', fetchOrders);
 });
 
 function initializeFilters() {
@@ -39,13 +39,20 @@ async function fetchOrders() {
     const tbody = document.getElementById('ordersTableBody');
     tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Loading orders...</td></tr>';
 
+    const month = document.getElementById('filterMonth').value;
+    const year = document.getElementById('filterYear').value;
+
+    let url = CONFIG.SCRIPT_URL + '?action=getOrders&apitoken=' + CONFIG.API_TOKEN;
+    if (month !== "") url += `&month=${month}`;
+    if (year !== "") url += `&year=${year}`;
+
     try {
-        const res = await fetch(CONFIG.SCRIPT_URL + '?action=getOrders&apitoken=' + CONFIG.API_TOKEN);
+        const res = await fetch(url);
         const data = await res.json();
         
         if (data.result === 'success') {
-             allOrders = data.data; // Corrected from data.result to data.data based on APPS_SCRIPT.js
-             applyFilters(); // Apply default filters (current month)
+             allOrders = data.data; 
+             applyFilters(); // Apply text search filter if any
         } else {
              throw new Error(data.message || 'Failed to fetch orders');
         }
@@ -99,33 +106,16 @@ function renderOrders(orders) {
 
 function applyFilters() {
     const term = document.getElementById('searchOrder').value.toLowerCase();
-    const month = document.getElementById('filterMonth').value;
-    const year = document.getElementById('filterYear').value;
+    // Month/Year filtering is now handled server-side. 
+    // We only need to filter by search term on the returned data set.
     
     const filtered = allOrders.filter(o => {
         // Text Search
         const matchesTerm = !term || 
             o.orderid.toString().includes(term) || 
             o.name.toLowerCase().includes(term);
-            
-        // Date Filter
-        let matchesDate = true;
-        if (month !== "") {
-            // Parse order date (dd-MMM-yyyy from GAS)
-            // Note: Date parsing can be tricky. Using Date constructor usually works for standard formats,
-            // but for "dd-MMM-yyyy", modern browsers handle it, or we parse manually.
-            // Let's rely on Date.parse or new Date()
-            const d = new Date(o.orderDate);
-            if (!isNaN(d)) {
-                // Check Month and Year
-                // Note: filterMonth value is 0-11
-                if (d.getMonth() != month || d.getFullYear() != year) {
-                    matchesDate = false;
-                }
-            }
-        }
         
-        return matchesTerm && matchesDate;
+        return matchesTerm;
     });
 
     renderOrders(filtered);

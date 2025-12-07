@@ -57,7 +57,7 @@ function handleRequest(e) {
         return output.setContent(JSON.stringify(handleCreateOrder(params)));
 
       case 'getOrders':
-        return output.setContent(JSON.stringify(handleGetOrders()));
+        return output.setContent(JSON.stringify(handleGetOrders(params)));
 
       case 'update':
         return output.setContent(JSON.stringify(handleUpdateOrder(params)));
@@ -151,15 +151,43 @@ function handleCreateOrder(params) {
 }
 
 // GET Orders Handler
-function handleGetOrders() {
+function handleGetOrders(params) {
   const sheet = getSheet(ORDER_SHEET);
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const results = [];
 
-  const start = Math.max(1, data.length - 50);
+  // Params for filtering
+  // Expect params.month (0-11) and params.year (YYYY)
+  // If provided, we scan ALL data. If not provided, we stick to default pagination (last 50).
+  const filterMonth = (params && params.month !== undefined && params.month !== "") ? parseInt(params.month) : null;
+  const filterYear = (params && params.year !== undefined && params.year !== "") ? parseInt(params.year) : null;
+  
+  const hasFilter = (filterMonth !== null && filterYear !== null);
+  
+  // If hasFilter, scan from row 1. Else scan last 50.
+  const start = hasFilter ? 1 : Math.max(1, data.length - 50);
 
   for (let i = start; i < data.length; i++) {
+    // Check Filter First
+    if (hasFilter) {
+       const dateCol = headers.indexOf("orderDate");
+       if (dateCol > -1) {
+           const dateStr = data[i][dateCol]; // "dd-MMM-yyyy"
+           if (dateStr) {
+               const dateObj = new Date(dateStr);
+               if (!isNaN(dateObj)) {
+                   if (dateObj.getMonth() !== filterMonth || dateObj.getFullYear() !== filterYear) {
+                       continue; // Skip if no match
+                   }
+               } else {
+                   // Fallback for string parsing if Date fails on "dd-MMM-yyyy" in some locales
+                   // Typically new Date() works in GAS environment for this format.
+               }
+           }
+       }
+    }
+
     const obj = {};
     headers.forEach((h, idx) => obj[h] = data[i][idx]);
     
