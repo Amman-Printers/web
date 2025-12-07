@@ -197,9 +197,25 @@ async function handleSubmit(e) {
                 </div>
             `;
             
+            // Buttons
             document.getElementById('downloadPdfBtn').classList.remove('hidden');
             document.getElementById('downloadPdfBtn').disabled = false;
-            submitBtn.textContent = 'Order Created';
+            
+            submitBtn.classList.add('hidden'); // Hide Submit Button
+            
+            const newOrderBtn = document.getElementById('startNewOrderBtn');
+            newOrderBtn.classList.remove('hidden'); // Show New Order Button
+            newOrderBtn.addEventListener('click', () => window.location.reload());
+
+            // Freeze Form
+            const formInputs = document.querySelectorAll('input, textarea, button');
+            formInputs.forEach(input => {
+                if (input.id !== 'downloadPdfBtn' && input.id !== 'startNewOrderBtn') {
+                    input.disabled = true;
+                    input.classList.add('opacity-60', 'cursor-not-allowed');
+                }
+            });
+
         } else {
             throw new Error(response.message || 'Submission failed');
         }
